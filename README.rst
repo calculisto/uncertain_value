@@ -1,7 +1,7 @@
 isto::uncertain_value
 =====================
 
-A ``C++20`` headers-only library implementing vlaues with uncertainties.
+A ``C++20`` headers-only library implementing values with uncertainties.
 
 Requirements
 ------------
