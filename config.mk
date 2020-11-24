@@ -1,6 +1,6 @@
-FMTLIB_HEADERS=../external/fmtlib/fmt/include
-FMTLIB_LIBRARY=../external/fmtlib/fmt/build
-DOCTEST_HEADERS=../external/onqtam/doctest
+FMTLIB_HEADERS=../../external/fmtlib/fmt/include
+FMTLIB_LIBRARY=../../external/fmtlib/fmt/build
+DOCTEST_HEADERS=../../external/onqtam/doctest
 DEPENDENCIES_HEADERS=
 
 PROJECT=uncertain_value
