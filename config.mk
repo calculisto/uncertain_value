@@ -1,7 +1,7 @@
 FMTLIB_HEADERS=../../external/fmtlib/fmt/include
 FMTLIB_LIBRARY=../../external/fmtlib/fmt/build
 DOCTEST_HEADERS=../../external/onqtam/doctest
-DEPENDENCIES_HEADERS=
+DEPENDENCIES_HEADERS=../../isto/template_pow/include
 
 PROJECT=uncertain_value
 LINK.o=${LINK.cc}

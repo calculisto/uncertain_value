@@ -1,6 +1,6 @@
 #pragma once
-#include <cmath>
 #include <numbers>
+#include <isto/template_pow/template_pow.hpp>
 
     namespace isto::uncertain_value
 {
@@ -611,8 +611,8 @@ UNARY_FUNCTION(logb)
         , class U                                                           \
         , class V = decltype (f (std::declval <T> (), std::declval <U> ())) \
     >                                                                       \
-    constexpr uncertain_value_t <V>                                                        \
-f (uncertain_value_t <T> const& a, uncertain_value_t <U> const& b)                                        \
+    constexpr uncertain_value_t <V>                                         \
+f (uncertain_value_t <T> const& a, uncertain_value_t <U> const& b)          \
 {                                                                           \
     return { f (a.value, b.value) };                                        \
 }                                                                           \
@@ -621,8 +621,8 @@ f (uncertain_value_t <T> const& a, uncertain_value_t <U> const& b)              
         , class U                                                           \
         , class V = decltype (f (std::declval <T> (), std::declval <U> ())) \
     >                                                                       \
-    constexpr uncertain_value_t <V>                                                        \
-f (uncertain_value_t <T> const& a, U const& b)                                             \
+    constexpr uncertain_value_t <V>                                         \
+f (uncertain_value_t <T> const& a, U const& b)                              \
 {                                                                           \
     return { f (a.value, b) };                                              \
 }                                                                           \
@@ -631,8 +631,8 @@ f (uncertain_value_t <T> const& a, U const& b)                                  
         , class U                                                           \
         , class V = decltype (f (std::declval <T> (), std::declval <U> ())) \
     >                                                                       \
-    constexpr uncertain_value_t <V>                                                        \
-f (T const& a, uncertain_value_t <U> const& b)                                             \
+    constexpr uncertain_value_t <V>                                         \
+f (T const& a, uncertain_value_t <U> const& b)                              \
 {                                                                           \
     return { f (a, b.value) };                                              \
 }
@@ -690,6 +690,21 @@ pow (T const& a, uncertain_value_t <U> b)
     b.uncertainty = b.uncertainty * b.value * b.value;
     return b;
 }
+
+    template <
+          auto Exponent
+        , class T
+    >
+    constexpr auto
+pow (uncertain_value_t <T> a)
+{
+        using isto::template_pow::pow;
+    a.uncertainty = a.uncertainty / a.value / a.value * Exponent * Exponent;
+    a.value = pow <Exponent> (a.value);
+    a.uncertainty = a.uncertainty * a.value * a.value;
+    return a;
+}
+
 /* TODO
 BINARY_FUNCTION(fmod)
 BINARY_FUNCTION(remainder)

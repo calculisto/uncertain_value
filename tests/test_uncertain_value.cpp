@@ -117,4 +117,12 @@ TEST_CASE("uncertain_value.hpp")
         b { a };
         */
     };
+    SUBCASE("template pow")
+    {
+            constexpr auto
+        x = pow <2> (uncertain_value_t { 2.0, 0.1 });
+        static_assert (x.value == 4.0);
+        // Approx
+        // static_assert (x.uncertainty == 0.4);
+    }
 }
