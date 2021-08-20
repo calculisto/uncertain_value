@@ -283,6 +283,57 @@ operator / (uncertain_value_t <T> const& a, uncertain_value_t <U> const& b)
         , a.value * a.value / b.value / b.value * (a.uncertainty / a.value / a.value + b.uncertainty / b.value / b.value) 
     };
 }
+// Compound assignement
+    template <
+          class T
+        , class U
+        , class V = decltype (std::declval <T> () + std::declval <U> ())
+    >
+    constexpr uncertain_value_t <V>&
+operator += (uncertain_value_t <T>& a, uncertain_value_t <U> const& b)
+{
+    a.value += b.value;
+    a.uncertainty += b.uncertainty;
+    return a;
+}
+    template <
+          class T
+        , class U
+        , class V = decltype (std::declval <T> () + std::declval <U> ())
+    >
+    constexpr uncertain_value_t <V>&
+operator -= (uncertain_value_t <T>& a, uncertain_value_t <U> const& b)
+{
+    a.value -= b.value;
+    a.uncertainty += b.uncertainty;
+    return a;
+}
+    template <
+          class T
+        , class U
+        , class V = decltype (std::declval <T> () + std::declval <U> ())
+    >
+    constexpr uncertain_value_t <V>&
+operator *= (uncertain_value_t <T>& a, uncertain_value_t <U> const& b)
+{
+    a.uncertainty *= b.value * b.value;
+    a.uncertainty += b.uncertainty * a.value * a.value;
+    a.value *= b.value;
+    return a;
+}
+    template <
+          class T
+        , class U
+        , class V = decltype (std::declval <T> () + std::declval <U> ())
+    >
+    constexpr uncertain_value_t <V>&
+operator /= (uncertain_value_t <T>& a, uncertain_value_t <U> const& b)
+{
+    a.uncertainty *= b.value * b.value;
+    a.uncertainty += b.uncertainty * a.value * a.value;
+    a.value /= b.value;
+    return a;
+}
 // 3.2.3. Binary, external.
     template <
           class T
@@ -372,6 +423,58 @@ operator / (T const& a, uncertain_value_t <U> const& b)
 {
     return { a / b.value, b.uncertainty * a * a / pow (b.value, 4)};
 }
+// Compound assignement
+    template <
+          class T
+        , class U
+//        , class = std::enable_if_t <is_arithmetic_type_v <U>>
+        , class V = decltype (std::declval <T> () + std::declval <U> ())
+    >
+    constexpr uncertain_value_t <V>
+operator += (uncertain_value_t <T>& a, U const& b)
+{
+    a.value += b;
+    return a;
+}
+    template <
+          class T
+        , class U
+//        , class = std::enable_if_t <is_arithmetic_type_v <U>>
+        , class V = decltype (std::declval <T> () + std::declval <U> ())
+    >
+    constexpr uncertain_value_t <V>
+operator -= (uncertain_value_t <T>& a, U const& b)
+{
+    a.value -= b;
+    return a;
+}
+    template <
+          class T
+        , class U
+//        , class = std::enable_if_t <is_arithmetic_type_v <U>>
+        , class V = decltype (std::declval <T> () + std::declval <U> ())
+    >
+    constexpr uncertain_value_t <V>
+operator *= (uncertain_value_t <T>& a, U const& b)
+{
+    a.value *= b;
+    a.uncertainty *= b * b;
+    return a;
+}
+    template <
+          class T
+        , class U
+//        , class = std::enable_if_t <is_arithmetic_type_v <U>>
+        , class V = decltype (std::declval <T> () + std::declval <U> ())
+    >
+    constexpr uncertain_value_t <V>
+operator /= (uncertain_value_t <T>& a, U const& b)
+{
+    a.value /= b;
+    a.uncertainty *= b * b;
+    return a;
+}
+
 // 3.2.4. cmath functions
     using
       std::fabs

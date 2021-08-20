@@ -6,32 +6,59 @@ TEST_CASE("uncertain_value.hpp")
 {
     SUBCASE("uncertain_value_t")
     {
-            auto
+            auto const
         a = 2.0;
-            auto
+            auto const
         b = 3.0; 
-            auto
+            auto const
         A = uncertain_value_t {4.0, 0.01};
-            auto
+            auto const
         B = uncertain_value_t {5.0, 0.02};
             using
         U = uncertain_value_t <double>;
         {
-                auto
+                auto const
+            C = A;
+            CHECK(C == A);
+        }
+        {
+                auto const
             C = a * A + b * B;
             static_assert (std::is_same_v <decltype (C), U>);
             CHECK(C.value == a * A.value + b * B.value);
             CHECK(C.uncertainty == a * a * A.uncertainty + b * b * B.uncertainty);
         }
         {
-                auto
+                auto const
             C = a * A - b * B;
             static_assert (std::is_same_v <decltype (C), U>);
             CHECK(C.value == a * A.value - b * B.value);
             CHECK(C.uncertainty == a * a * A.uncertainty + b * b * B.uncertainty);
         }
         {
+                auto const
+            C = A + B;
+            static_assert (std::is_same_v <decltype (C), U>);
+            CHECK(C.value == A.value + B.value);
+            CHECK(C.uncertainty == A.uncertainty + B.uncertainty);
                 auto
+            D = A;
+            D += B;
+            CHECK(D == C);
+        }
+        {
+                auto const
+            C = A - B;
+            static_assert (std::is_same_v <decltype (C), U>);
+            CHECK(C.value == A.value - B.value);
+            CHECK(C.uncertainty == A.uncertainty + B.uncertainty);
+                auto
+            D = A;
+            D -= B;
+            CHECK(D == C);
+        }
+        {
+                auto const
             C = A * B;
             static_assert (std::is_same_v <decltype (C), U>);
             CHECK(C.value == A.value * B.value);
@@ -39,16 +66,67 @@ TEST_CASE("uncertain_value.hpp")
                   A.uncertainty * B.value * B.value 
                 + B.uncertainty * A.value * A.value
             );
+                auto
+            D = A;
+            D *= B;
+            CHECK(D == C);
         }
         {
-                auto
+                auto const
             C = A / B;
             static_assert (std::is_same_v <decltype (C), U>);
             CHECK(C.value == A.value / B.value);
             CHECK(C.uncertainty == 
-                  A.uncertainty / B.value / B.value 
-                + B.uncertainty * A.value * A.value / B.value / B.value / B.value / B.value 
+                  A.uncertainty * B.value * B.value 
+                + B.uncertainty * A.value * A.value
             );
+                auto
+            D = A;
+            D /= B;
+            CHECK(D == C);
+        }
+        {
+                auto const
+            C = A + a;
+            static_assert (std::is_same_v <decltype (C), U>);
+            CHECK(C.value == A.value + a);
+            CHECK(C.uncertainty == A.uncertainty);
+                auto
+            D = A;
+            D += a;
+            CHECK(D == C);
+        }
+        {
+                auto const
+            C = A - a;
+            static_assert (std::is_same_v <decltype (C), U>);
+            CHECK(C.value == A.value - a);
+            CHECK(C.uncertainty == A.uncertainty);
+                auto
+            D = A;
+            D -= a;
+            CHECK(D == C);
+        }
+        {
+                auto const
+            C = A * a;
+            static_assert (std::is_same_v <decltype (C), U>);
+            CHECK(C.value == A.value * a);
+            CHECK(C.uncertainty == A.uncertainty * a * a);
+                auto
+            D = A;
+            D *= a;
+            CHECK(D == C);
+        }{
+                auto const
+            C = A / a;
+            static_assert (std::is_same_v <decltype (C), U>);
+            CHECK(C.value == A.value / a);
+            CHECK(C.uncertainty == A.uncertainty * a * a);
+                auto
+            D = A;
+            D /= a;
+            CHECK(D == C);
         }
         {
                 auto
