@@ -15,7 +15,7 @@ TEST_CASE("uncertain_value.hpp")
             auto const
         B = uncertain_value_t {5.0, 0.02};
             using
-        U = uncertain_value_t <double>;
+        U = const uncertain_value_t <double>;
         {
                 auto const
             C = A;
@@ -77,13 +77,14 @@ TEST_CASE("uncertain_value.hpp")
             static_assert (std::is_same_v <decltype (C), U>);
             CHECK(C.value == A.value / B.value);
             CHECK(C.uncertainty == 
-                  A.uncertainty * B.value * B.value 
-                + B.uncertainty * A.value * A.value
+                  A.uncertainty / B.value / B.value 
+                + B.uncertainty * A.value * A.value / B.value / B.value / B.value / B.value 
             );
                 auto
             D = A;
             D /= B;
-            CHECK(D == C);
+            CHECK(D.value == C.value);
+            CHECK(D.uncertainty == C.uncertainty);
         }
         {
                 auto const
@@ -122,14 +123,15 @@ TEST_CASE("uncertain_value.hpp")
             C = A / a;
             static_assert (std::is_same_v <decltype (C), U>);
             CHECK(C.value == A.value / a);
-            CHECK(C.uncertainty == A.uncertainty * a * a);
+            CHECK(C.uncertainty == A.uncertainty / a / a);
                 auto
             D = A;
             D /= a;
-            CHECK(D == C);
+            CHECK(D.value == C.value);
+            CHECK(D.uncertainty == C.uncertainty);
         }
         {
-                auto
+                auto const
             C = pow (A, B);
             static_assert (std::is_same_v <decltype (C), U>);
             CHECK(C.value == pow (A.value, B.value));
@@ -151,14 +153,14 @@ TEST_CASE("uncertain_value.hpp")
             CHECK (F.uncertainty == G.uncertainty);
         }
         {
-                auto
+                auto const
             C = log (A);
             static_assert (std::is_same_v <decltype (C), U>);
             CHECK(C.value == log (A.value));
             CHECK(C.uncertainty == A.uncertainty / A.value / A.value);
         }
         {
-                auto
+                auto const
             C = exp (A);
             static_assert (std::is_same_v <decltype (C), U>);
             CHECK(C.value == exp (A.value));

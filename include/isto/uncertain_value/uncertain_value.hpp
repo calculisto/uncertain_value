@@ -9,18 +9,16 @@
 uncertain_value_t;
 
     template <class T>
-    struct
-is_uncertain_value
-    : std::false_type
-{};
-    template <class T>
-    struct
-is_uncertain_value <uncertain_value_t <T>>
-    : std::true_type
-{};
+    constexpr bool
+is_uncertain_value_v = false;
+
     template <class T>
     constexpr bool
-is_uncertain_value_v = is_uncertain_value <T>::value;
+is_uncertain_value_v <uncertain_value_t <T>> = true;
+
+    template <class T>
+    concept
+uncertain_value = is_uncertain_value_v <T>;
 
 // (The uncertainty is a variance.)
     template <class T>
@@ -91,7 +89,7 @@ operator != (uncertain_value_t <T> const& a, uncertain_value_t <U> const& b)
             , class U
             , class = std::enable_if_t <!is_uncertain_value_v <U>>
         >
-    requires std::equality_comparable_with <T, U>
+    //requires (!uncertain_value <U> && std::equality_comparable_with <T, U>)
     constexpr auto
 operator == (uncertain_value_t <T> const& a, U const& b)
 {
@@ -102,7 +100,7 @@ operator == (uncertain_value_t <T> const& a, U const& b)
             , class U
             , class = std::enable_if_t <!is_uncertain_value_v <U>>
         >
-    requires std::equality_comparable_with <T, U>
+    //requires (!uncertain_value <U> && std::equality_comparable_with <T, U>)
     constexpr auto
 operator != (uncertain_value_t <T> const& a, U const& b)
 {
@@ -113,7 +111,7 @@ operator != (uncertain_value_t <T> const& a, U const& b)
             , class U
             , class = std::enable_if_t <!is_uncertain_value_v <T>>
         >
-    requires std::equality_comparable_with <T, U>
+    //requires (!uncertain_value <T> && std::equality_comparable_with <T, U>)
     constexpr auto
 operator == (T const& a, uncertain_value_t <U> const& b)
 {
@@ -124,91 +122,91 @@ operator == (T const& a, uncertain_value_t <U> const& b)
             , class U
             , class = std::enable_if_t <!is_uncertain_value_v <T>>
         >
-    requires std::equality_comparable_with <T, U>
+    //requires (!uncertain_value <T> && std::equality_comparable_with <T, U>)
     constexpr auto
 operator != (T const& a, uncertain_value_t <U> const& b)
 {
     return a != b.value;
 }
     template <class T, class U>
-    requires std::totally_ordered_with <T, U>
+    //requires std::totally_ordered_with <T, U>
     constexpr auto
 operator < (uncertain_value_t <T> const& a, uncertain_value_t <U> const& b)
 {
     return a.value < b.value;
 }
     template <class T, class U>
-    requires std::totally_ordered_with <T, U>
+    //requires std::totally_ordered_with <T, U>
     constexpr auto
 operator > (uncertain_value_t <T> const& a, uncertain_value_t <U> const& b)
 {
     return a.value > b.value;
 }
     template <class T, class U>
-    requires std::totally_ordered_with <T, U>
+    //requires std::totally_ordered_with <T, U>
     constexpr auto
 operator <= (uncertain_value_t <T> const& a, uncertain_value_t <U> const& b)
 {
     return a.value <= b.value;
 }
     template <class T, class U>
-    requires std::totally_ordered_with <T, U>
+    //requires std::totally_ordered_with <T, U>
     constexpr auto
 operator >= (uncertain_value_t <T> const& a, uncertain_value_t <U> const& b)
 {
     return a.value >= b.value;
 }
     template <class T, class U>
-    requires (!is_uncertain_value_v <U> && std::totally_ordered_with <T, U>)
+    //requires (!is_uncertain_value_v <U> && std::totally_ordered_with <T, U>)
     constexpr auto
 operator < (uncertain_value_t <T> const& a, U const& b)
 {
     return a.value < b;
 }
     template <class T, class U>
-    requires (!is_uncertain_value_v <U> && std::totally_ordered_with <T, U>)
+    //requires (!is_uncertain_value_v <U> && std::totally_ordered_with <T, U>)
     constexpr auto
 operator > (uncertain_value_t <T> const& a, U const& b)
 {
     return a.value > b;
 }
     template <class T, class U>
-    requires (!is_uncertain_value_v <U> && std::totally_ordered_with <T, U>)
+    //requires (!is_uncertain_value_v <U> && std::totally_ordered_with <T, U>)
     constexpr auto
 operator <= (uncertain_value_t <T> const& a, U const& b)
 {
     return a.value <= b;
 }
     template <class T, class U>
-    requires (!is_uncertain_value_v <U> && std::totally_ordered_with <T, U>)
+    //requires (!is_uncertain_value_v <U> && std::totally_ordered_with <T, U>)
     constexpr auto
 operator >= (uncertain_value_t <T> const& a, U const& b)
 {
     return a.value >= b;
 }
     template <class T, class U>
-    requires (!is_uncertain_value_v <T> && std::totally_ordered_with <T, U>)
+    //requires (!is_uncertain_value_v <T> && std::totally_ordered_with <T, U>)
     constexpr auto
 operator < (T const& a, uncertain_value_t <U> const& b)
 {
     return a < b.value;
 }
     template <class T, class U>
-    requires (!is_uncertain_value_v <T> && std::totally_ordered_with <T, U>)
+    //requires (!is_uncertain_value_v <T> && std::totally_ordered_with <T, U>)
     constexpr auto
 operator > (T const& a, uncertain_value_t <U> const& b)
 {
     return a > b.value;
 }
     template <class T, class U>
-    requires (!is_uncertain_value_v <T> && std::totally_ordered_with <T, U>)
+    //requires (!is_uncertain_value_v <T> && std::totally_ordered_with <T, U>)
     constexpr auto
 operator <= (T const& a, uncertain_value_t <U> const& b)
 {
     return a <= b.value;
 }
     template <class T, class U>
-    requires (!is_uncertain_value_v <T> && std::totally_ordered_with <T, U>)
+    //requires (!is_uncertain_value_v <T> && std::totally_ordered_with <T, U>)
     constexpr auto
 operator >= (T const& a, uncertain_value_t <U> const& b)
 {
@@ -329,8 +327,8 @@ operator *= (uncertain_value_t <T>& a, uncertain_value_t <U> const& b)
     constexpr uncertain_value_t <V>&
 operator /= (uncertain_value_t <T>& a, uncertain_value_t <U> const& b)
 {
-    a.uncertainty *= b.value * b.value;
-    a.uncertainty += b.uncertainty * a.value * a.value;
+    a.uncertainty += b.uncertainty * a.value * a.value / b.value / b.value;
+    a.uncertainty /= b.value * b.value;
     a.value /= b.value;
     return a;
 }
@@ -471,7 +469,7 @@ operator *= (uncertain_value_t <T>& a, U const& b)
 operator /= (uncertain_value_t <T>& a, U const& b)
 {
     a.value /= b;
-    a.uncertainty *= b * b;
+    a.uncertainty /= b * b;
     return a;
 }
 
