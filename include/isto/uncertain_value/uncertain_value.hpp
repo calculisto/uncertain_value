@@ -16,27 +16,24 @@ is_uncertain_value_v = false;
     constexpr bool
 is_uncertain_value_v <uncertain_value_t <T>> = true;
 
-    template <class T>
-    concept
-uncertain_value = is_uncertain_value_v <T>;
-
 // (The uncertainty is a variance.)
     template <class T>
     struct
 uncertain_value_t
 {
     static_assert (!is_uncertain_value_v <T>);
+
         using
     value_type = T;
+
         value_type
     value = T {};
+
         value_type
     uncertainty = static_cast <T> (0);
 
-        template <
-              class U
-            , class = std::enable_if_t <std::is_convertible_v <U, T>>
-        >
+        template <class U>
+        requires std::convertible_to <U, T>
         constexpr
         explicit (false)
     uncertain_value_t (uncertain_value_t <U> const& a)
@@ -52,6 +49,7 @@ uncertain_value_t
     uncertain_value_t (T const& a)
         : value { a }
     {}
+
         constexpr
         explicit (false)
     uncertain_value_t (T const& a, T const& b)
@@ -61,158 +59,73 @@ uncertain_value_t
 };
     template <class T>
 uncertain_value_t (T, T) -> uncertain_value_t <T>;
-// Regularity.
-    template <
-          class T
-        , class U
-        , class = std::enable_if_t <std::equality_comparable_with <T, U>>
-    >
+
+    template <class T>
+    requires std::swappable <T>
+    constexpr void
+swap (uncertain_value_t <T>& a, uncertain_value_t <T>& b) noexcept
+{
+        using std::swap;
+    swap (a.value, b.value);
+    swap (a.uncertainty, b.uncertainty);
+}
+
+    template <class T, class U>
+    requires std::swappable_with <T&, U&>
+    constexpr void
+swap (uncertain_value_t <T>& a, uncertain_value_t <U>& b) noexcept
+{
+        using std::swap;
+    swap (a.value, b.value);
+    swap (a.uncertainty, b.uncertainty);
+}
+
+    template <class T, class U>
+    requires std::equality_comparable_with <T, U>
     constexpr auto
 operator == (uncertain_value_t <T> const& a, uncertain_value_t <U> const& b)
 {
     return a.value == b.value && a.uncertainty == b.uncertainty;
 }
-    template <
-          class T
-        , class U
-        , class = std::enable_if_t <std::equality_comparable_with <T, U>>
-    >
-    constexpr auto
-operator != (uncertain_value_t <T> const& a, uncertain_value_t <U> const& b)
-{
-    return a.value != b.value || a.uncertainty != b.uncertainty;
-}
-// Ok, we're regular.
 
-        template <
-              class T
-            , class U
-            , class = std::enable_if_t <!is_uncertain_value_v <U>>
-        >
-    //requires (!uncertain_value <U> && std::equality_comparable_with <T, U>)
+    template <class T, class U>
+    requires (!is_uncertain_value_v <U> && std::equality_comparable_with <T, U>)
     constexpr auto
 operator == (uncertain_value_t <T> const& a, U const& b)
 {
     return a.value == b;
 }
-        template <
-              class T
-            , class U
-            , class = std::enable_if_t <!is_uncertain_value_v <U>>
-        >
-    //requires (!uncertain_value <U> && std::equality_comparable_with <T, U>)
-    constexpr auto
-operator != (uncertain_value_t <T> const& a, U const& b)
-{
-    return a.value != b;
-}
-        template <
-              class T
-            , class U
-            , class = std::enable_if_t <!is_uncertain_value_v <T>>
-        >
-    //requires (!uncertain_value <T> && std::equality_comparable_with <T, U>)
+
+    template <class T, class U>
+    requires (!is_uncertain_value_v <T> && std::equality_comparable_with <T, U>)
     constexpr auto
 operator == (T const& a, uncertain_value_t <U> const& b)
 {
     return a == b.value;
 }
-        template <
-              class T
-            , class U
-            , class = std::enable_if_t <!is_uncertain_value_v <T>>
-        >
-    //requires (!uncertain_value <T> && std::equality_comparable_with <T, U>)
-    constexpr auto
-operator != (T const& a, uncertain_value_t <U> const& b)
-{
-    return a != b.value;
-}
+
     template <class T, class U>
-    //requires std::totally_ordered_with <T, U>
+    requires std::three_way_comparable_with <T, U>
     constexpr auto
-operator < (uncertain_value_t <T> const& a, uncertain_value_t <U> const& b)
+operator <=> (uncertain_value_t <T> const& a, uncertain_value_t <U> const& b)
 {
     return a.value < b.value;
 }
     template <class T, class U>
-    //requires std::totally_ordered_with <T, U>
+    requires (!is_uncertain_value_v <U> && std::totally_ordered_with <T, U>)
     constexpr auto
-operator > (uncertain_value_t <T> const& a, uncertain_value_t <U> const& b)
+operator <=> (uncertain_value_t <T> const& a, U const& b)
 {
-    return a.value > b.value;
+    return a.value <=> b;
 }
     template <class T, class U>
-    //requires std::totally_ordered_with <T, U>
+    requires (!is_uncertain_value_v <T> && std::totally_ordered_with <T, U>)
     constexpr auto
-operator <= (uncertain_value_t <T> const& a, uncertain_value_t <U> const& b)
+operator <=> (T const& a, uncertain_value_t <U> const& b)
 {
-    return a.value <= b.value;
+    return a <=> b.value;
 }
-    template <class T, class U>
-    //requires std::totally_ordered_with <T, U>
-    constexpr auto
-operator >= (uncertain_value_t <T> const& a, uncertain_value_t <U> const& b)
-{
-    return a.value >= b.value;
-}
-    template <class T, class U>
-    //requires (!is_uncertain_value_v <U> && std::totally_ordered_with <T, U>)
-    constexpr auto
-operator < (uncertain_value_t <T> const& a, U const& b)
-{
-    return a.value < b;
-}
-    template <class T, class U>
-    //requires (!is_uncertain_value_v <U> && std::totally_ordered_with <T, U>)
-    constexpr auto
-operator > (uncertain_value_t <T> const& a, U const& b)
-{
-    return a.value > b;
-}
-    template <class T, class U>
-    //requires (!is_uncertain_value_v <U> && std::totally_ordered_with <T, U>)
-    constexpr auto
-operator <= (uncertain_value_t <T> const& a, U const& b)
-{
-    return a.value <= b;
-}
-    template <class T, class U>
-    //requires (!is_uncertain_value_v <U> && std::totally_ordered_with <T, U>)
-    constexpr auto
-operator >= (uncertain_value_t <T> const& a, U const& b)
-{
-    return a.value >= b;
-}
-    template <class T, class U>
-    //requires (!is_uncertain_value_v <T> && std::totally_ordered_with <T, U>)
-    constexpr auto
-operator < (T const& a, uncertain_value_t <U> const& b)
-{
-    return a < b.value;
-}
-    template <class T, class U>
-    //requires (!is_uncertain_value_v <T> && std::totally_ordered_with <T, U>)
-    constexpr auto
-operator > (T const& a, uncertain_value_t <U> const& b)
-{
-    return a > b.value;
-}
-    template <class T, class U>
-    //requires (!is_uncertain_value_v <T> && std::totally_ordered_with <T, U>)
-    constexpr auto
-operator <= (T const& a, uncertain_value_t <U> const& b)
-{
-    return a <= b.value;
-}
-    template <class T, class U>
-    //requires (!is_uncertain_value_v <T> && std::totally_ordered_with <T, U>)
-    constexpr auto
-operator >= (T const& a, uncertain_value_t <U> const& b)
-{
-    return a >= b.value;
-}
-// Ok, we're strict_totally_ordered
+
 // Arithmetic operations.
     template <
           class T
@@ -336,7 +249,6 @@ operator /= (uncertain_value_t <T>& a, uncertain_value_t <U> const& b)
     template <
           class T
         , class U
-//        , class = std::enable_if_t <is_arithmetic_type_v <U>>
         , class V = decltype (std::declval <T> () + std::declval <U> ())
     >
     constexpr uncertain_value_t <V>
@@ -347,7 +259,6 @@ operator + (uncertain_value_t <T> const& a, U const& b)
     template <
           class T
         , class U
-//        , class = std::enable_if_t <is_arithmetic_type_v <T>>
         , class V = decltype (std::declval <T> () + std::declval <U> ())
     >
     constexpr uncertain_value_t <V>
@@ -358,7 +269,6 @@ operator + (T const& a, uncertain_value_t <U> const& b)
     template <
           class T
         , class U
-//        , class = std::enable_if_t <is_arithmetic_type_v <U>>
         , class V = decltype (std::declval <T> () - std::declval <U> ())
     >
     constexpr uncertain_value_t <V>
@@ -369,7 +279,6 @@ operator - (uncertain_value_t <T> const& a, U const& b)
     template <
           class T
         , class U
-//        , class = std::enable_if_t <is_arithmetic_type_v <T>>
         , class V = decltype (std::declval <T> () - std::declval <U> ())
     >
     constexpr uncertain_value_t <V>
@@ -380,7 +289,6 @@ operator - (T const& a, uncertain_value_t <U> const& b)
     template <
           class T
         , class U
-//        , class = std::enable_if_t <is_arithmetic_type_v <U>>
         , class V = decltype (std::declval <T> () * std::declval <U> ())
     >
     constexpr uncertain_value_t <V>
@@ -391,7 +299,6 @@ operator * (uncertain_value_t <T> const& a, U const& b)
     template <
           class T
         , class U
-//        , class = std::enable_if_t <is_arithmetic_type_v <T>>
         , class V = decltype (std::declval <T> () * std::declval <U> ())
     >
     constexpr uncertain_value_t <V>
@@ -402,7 +309,6 @@ operator * (T const& a, uncertain_value_t <U> const& b)
     template <
           class T
         , class U
-//        , class = std::enable_if_t <is_arithmetic_type_v <U>>
         , class V = decltype (std::declval <T> () / std::declval <U> ())
     >
     constexpr uncertain_value_t <V>
@@ -413,7 +319,6 @@ operator / (uncertain_value_t <T> const& a, U const& b)
     template <
           class T
         , class U
-//        , class = std::enable_if_t <is_arithmetic_type_v <T>>
         , class V = decltype (std::declval <T> () / std::declval <U> ())
     >
     constexpr uncertain_value_t <V>
@@ -425,7 +330,6 @@ operator / (T const& a, uncertain_value_t <U> const& b)
     template <
           class T
         , class U
-//        , class = std::enable_if_t <is_arithmetic_type_v <U>>
         , class V = decltype (std::declval <T> () + std::declval <U> ())
     >
     constexpr uncertain_value_t <V>
@@ -437,7 +341,6 @@ operator += (uncertain_value_t <T>& a, U const& b)
     template <
           class T
         , class U
-//        , class = std::enable_if_t <is_arithmetic_type_v <U>>
         , class V = decltype (std::declval <T> () + std::declval <U> ())
     >
     constexpr uncertain_value_t <V>
@@ -449,7 +352,6 @@ operator -= (uncertain_value_t <T>& a, U const& b)
     template <
           class T
         , class U
-//        , class = std::enable_if_t <is_arithmetic_type_v <U>>
         , class V = decltype (std::declval <T> () + std::declval <U> ())
     >
     constexpr uncertain_value_t <V>
@@ -462,7 +364,6 @@ operator *= (uncertain_value_t <T>& a, U const& b)
     template <
           class T
         , class U
-//        , class = std::enable_if_t <is_arithmetic_type_v <U>>
         , class V = decltype (std::declval <T> () + std::declval <U> ())
     >
     constexpr uncertain_value_t <V>

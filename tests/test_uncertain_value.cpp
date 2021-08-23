@@ -19,8 +19,12 @@ TEST_CASE("uncertain_value.hpp")
         {
                 auto const
             C = A;
-            CHECK(C == A);
+            // doctest is not c++20 constraints ready.
+            CHECK((C == A));
         }
+        CHECK((A != B));
+        CHECK((A != a));
+        CHECK((a < A));
         {
                 auto const
             C = a * A + b * B;
@@ -44,7 +48,8 @@ TEST_CASE("uncertain_value.hpp")
                 auto
             D = A;
             D += B;
-            CHECK(D == C);
+            CHECK(D.value == C.value);
+            CHECK(D.uncertainty == C.uncertainty);
         }
         {
                 auto const
@@ -55,7 +60,8 @@ TEST_CASE("uncertain_value.hpp")
                 auto
             D = A;
             D -= B;
-            CHECK(D == C);
+            CHECK(D.value == C.value);
+            CHECK(D.uncertainty == C.uncertainty);
         }
         {
                 auto const
@@ -69,7 +75,8 @@ TEST_CASE("uncertain_value.hpp")
                 auto
             D = A;
             D *= B;
-            CHECK(D == C);
+            CHECK(D.value == C.value);
+            CHECK(D.uncertainty == C.uncertainty);
         }
         {
                 auto const
@@ -78,7 +85,8 @@ TEST_CASE("uncertain_value.hpp")
             CHECK(C.value == A.value / B.value);
             CHECK(C.uncertainty == 
                   A.uncertainty / B.value / B.value 
-                + B.uncertainty * A.value * A.value / B.value / B.value / B.value / B.value 
+                + B.uncertainty * A.value * A.value / B.value / B.value 
+                    / B.value / B.value 
             );
                 auto
             D = A;
@@ -95,7 +103,8 @@ TEST_CASE("uncertain_value.hpp")
                 auto
             D = A;
             D += a;
-            CHECK(D == C);
+            CHECK(D.value == C.value);
+            CHECK(D.uncertainty == C.uncertainty);
         }
         {
                 auto const
@@ -106,7 +115,8 @@ TEST_CASE("uncertain_value.hpp")
                 auto
             D = A;
             D -= a;
-            CHECK(D == C);
+            CHECK(D.value == C.value);
+            CHECK(D.uncertainty == C.uncertainty);
         }
         {
                 auto const
@@ -117,7 +127,8 @@ TEST_CASE("uncertain_value.hpp")
                 auto
             D = A;
             D *= a;
-            CHECK(D == C);
+            CHECK(D.value == C.value);
+            CHECK(D.uncertainty == C.uncertainty);
         }{
                 auto const
             C = A / a;
