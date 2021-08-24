@@ -23,6 +23,7 @@ TEST_CASE("uncertain_value.hpp")
             CHECK((C == A));
         }
         CHECK((A != B));
+        CHECK((A < B));
         CHECK((A != a));
         CHECK((a < A));
         {

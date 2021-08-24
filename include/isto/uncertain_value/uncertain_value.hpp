@@ -109,7 +109,7 @@ operator == (T const& a, uncertain_value_t <U> const& b)
     constexpr auto
 operator <=> (uncertain_value_t <T> const& a, uncertain_value_t <U> const& b)
 {
-    return a.value < b.value;
+    return a.value <=> b.value;
 }
     template <class T, class U>
     requires (!is_uncertain_value_v <U> && std::totally_ordered_with <T, U>)
