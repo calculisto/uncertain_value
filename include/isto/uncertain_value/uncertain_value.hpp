@@ -1,6 +1,8 @@
 #pragma once
 #include <numbers>
-#include <isto/template_pow/template_pow.hpp>
+#include <concepts>
+#include <compare>
+#include <cmath>
 
     namespace isto::uncertain_value
 {
@@ -693,6 +695,7 @@ pow (T const& a, uncertain_value_t <U> b)
     return b;
 }
 
+/*
     template <
           auto Exponent
         , class T
@@ -706,7 +709,7 @@ pow (uncertain_value_t <T> a)
     a.uncertainty = a.uncertainty * a.value * a.value;
     return a;
 }
-
+*/
 /* TODO
 BINARY_FUNCTION(fmod)
 BINARY_FUNCTION(remainder)
