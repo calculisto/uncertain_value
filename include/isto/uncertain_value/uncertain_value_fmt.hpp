@@ -17,7 +17,7 @@ fmt::formatter <uncertain_value_t <T>>
     {
             using std::sqrt;
         base_formatter::format (u.value, ctx);
-        format_to (ctx.out (), "±");
+        fmt::format_to (ctx.out (), "±");
         base_formatter::format (sqrt (u.uncertainty), ctx);
         return ctx.out ();
     }
