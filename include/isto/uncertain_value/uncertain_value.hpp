@@ -642,6 +642,43 @@ f (T const& a, uncertain_value_t <U> const& b)                              \
 }
 
     template <
+          class T 
+        , class U
+        , class V = std::common_type_t <T, U>
+    >
+    constexpr auto
+fmin (uncertain_value_t <T> a, uncertain_value_t <U> b)
+{
+    if (a.value < b.value) 
+        return uncertain_value_t <V> { a.value, a.uncertainty };
+    return uncertain_value_t <V> { b.value, b.uncertainty };
+}
+    template <
+          class T 
+        , class U
+        , class V = std::common_type_t <T, U>
+    >
+    constexpr auto
+fmin (uncertain_value_t <T> a, U const& b)
+{
+    if (a.value < b) 
+        return uncertain_value_t <V> { a.value, a.uncertainty };
+    return uncertain_value_t <V> { b, 0 };
+}
+    template <
+          class T 
+        , class U
+        , class V = std::common_type_t <T, U>
+    >
+    constexpr auto
+fmin (T const& a, uncertain_value_t <U> b)
+{
+    if (a < b.value) 
+        return uncertain_value_t <V> { a, 0 };
+    return uncertain_value_t <V> { b.value, b.uncertainty };
+}
+
+    template <
           class T
         , class U
         , class V = decltype (pow (std::declval <T> (), std::declval <U> ()))
@@ -710,7 +747,7 @@ pow (uncertain_value_t <T> a)
     return a;
 }
 */
-/* TODO
+/*
 BINARY_FUNCTION(fmod)
 BINARY_FUNCTION(remainder)
 BINARY_FUNCTION(fmax)
@@ -720,8 +757,8 @@ BINARY_FUNCTION(hypot)
 BINARY_FUNCTION(atan2)
 BINARY_FUNCTION(nextafter)
 BINARY_FUNCTION(copysign)
-#undef BINARY_FUNCTION
 */
+#undef BINARY_FUNCTION
 // 3.2.4.1 Ternary.
 /* TODO
 #define TERNARY_FUNCTION(f)                   \

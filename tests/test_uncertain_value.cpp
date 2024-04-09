@@ -209,6 +209,19 @@ TEST_CASE("uncertain_value.hpp")
         b { a };
         */
     };
+    SUBCASE("bnary function")
+    {
+            const uncertain_value_t <double>
+        a { 10, 1 };
+            const uncertain_value_t <double>
+        b { 20, 1 };
+            const auto
+        c = fmin (a, b);
+        CHECK(c == a);
+            const auto
+        d = fmin (b, 2);
+        CHECK(d == uncertain_value_t <double> { 2., 0. });
+    };
     /*
     SUBCASE("template pow")
     {

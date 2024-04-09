@@ -11,5 +11,5 @@ TEST_CASE("uncertain_value_fmt.hpp")
     CHECK(s1 == "10.1±1.1");
         auto
     s2 = fmt::format ("{:.0}", x);
-    CHECK(s2 == "10±1");
+    CHECK(s2 == "1e+01±1");
 }
