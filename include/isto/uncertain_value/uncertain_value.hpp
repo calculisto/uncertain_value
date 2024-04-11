@@ -3,6 +3,7 @@
 #include <concepts>
 #include <compare>
 #include <cmath>
+#include <complex>
 
     namespace isto::uncertain_value
 {
@@ -686,9 +687,17 @@ fmin (T const& a, uncertain_value_t <U> b)
     constexpr uncertain_value_t <V>
 pow (uncertain_value_t <T> a, uncertain_value_t <U> const& b)
 {
-    if (a.value == static_cast <T> (0))
+    if (b.value == 0)
     {
-        // TODO
+        a.value = 1;
+        a.uncertainty = 0;
+        return a;
+    }
+    if (a.value == 0)
+    {
+        a.value = 0;
+        a.uncertainty = 0;
+        return a;
     }
     a.uncertainty = a.uncertainty * b.value * b.value / a.value / a.value
         + b.uncertainty * log (a.value) * log (a.value);
@@ -704,10 +713,17 @@ pow (uncertain_value_t <T> a, uncertain_value_t <U> const& b)
     constexpr uncertain_value_t <V>
 pow (uncertain_value_t <T> a, U const& b)
 {
-    if (a.value == static_cast <T> (0))
+    if (b == 0)
     {
-        // TODO
-        return static_cast <T> (0);
+        a.value = 1;
+        a.uncertainty = 0;
+        return a;
+    }
+    if (a.value == 0)
+    {
+        a.value = 0;
+        a.uncertainty = 0;
+        return a;
     }
     a.uncertainty = a.uncertainty / a.value / a.value * b * b;
     a.value = pow (a.value, b);
@@ -722,9 +738,17 @@ pow (uncertain_value_t <T> a, U const& b)
     constexpr uncertain_value_t <V>
 pow (T const& a, uncertain_value_t <U> b)
 {
-    if (a == static_cast <T> (0))
+    if (b.value == 0)
     {
-        // TODO
+        b.value = 1;
+        b.uncertainty = 0;
+        return b;
+    }
+    if (a == 0)
+    {
+        b.value = 0;
+        b.uncertainty = 0;
+        return b;
     }
     b.uncertainty = b.uncertainty * log (a) * log (a);
     b.value = pow (a, b.value);
@@ -957,42 +981,19 @@ remquo (T const& a,  uncertain_value_t <U> const& b, int * c)
     return { remquo (a, b.value, c) };
 }
 */
-} // namespace isto::uncertain_value
-
-/*
-    namespace
-isto::misc
+// Interaction with std::complex
+    template <class T>
+    constexpr auto
+real (uncertain_value_t <std::complex <T>> const& a)
 {
-        using namespace isto::quantity;
-
-        template <class T>
-        struct
-    promoted_integer_type <uncertain_value_t <T>>
-    {
-            using
-        type = uncertain_value_t <promoted_integer_type_t <T>>;
-    };
-        template <class... T>
-        requires (std::disjunction_v <is_uncertain_value <T>...>)
-        struct
-    promoted_float_type <T...>
-    {
-            using
-        type = uncertain_value_t <promoted_float_type_t <remove_uncertain_value_t <T>...>>;
-    };
-} // namespace isto::misc
-//static_assert (isto::misc::is_arithmetic_v <isto::quantity::uncertain_value_t <double>>);
-*/
-/*
-    namespace
-isto::misc
-{
-        template <class T>
-        struct
-    is_arithmetic_type <isto::quantity::uncertain_value_t <T>>
-    {
-            static constexpr bool
-        value = is_arithmetic_type_v <T>;
-    };
+    return uncertain_value_t <T> { real (a.value), real (a.uncertainty) };
 }
-  */  
+    template <class T>
+    constexpr auto
+log (uncertain_value_t <std::complex <T>> a)
+{
+    a.uncertainty = a.uncertainty / a.value / a.value;
+    a.value = log (a.value);
+    return a;
+}
+} // namespace isto::uncertain_value
