@@ -1,6 +1,6 @@
 #include <doctest/doctest.h>
-#include "../include/isto/uncertain_value/uncertain_value.hpp"
-    using isto::uncertain_value::uncertain_value_t;
+#include "../include/calculisto/uncertain_value/uncertain_value.hpp"
+    using calculisto::uncertain_value::uncertain_value_t;
 
 TEST_CASE("uncertain_value.hpp")
 {

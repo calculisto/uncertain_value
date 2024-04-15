@@ -5,7 +5,7 @@
 #include <cmath>
 #include <complex>
 
-    namespace isto::uncertain_value
+    namespace calculisto::uncertain_value
 {
     template <class T>
     struct
@@ -764,7 +764,7 @@ pow (T const& a, uncertain_value_t <U> b)
     constexpr auto
 pow (uncertain_value_t <T> a)
 {
-        using isto::template_pow::pow;
+        using calculisto::template_pow::pow;
     a.uncertainty = a.uncertainty / a.value / a.value * Exponent * Exponent;
     a.value = pow <Exponent> (a.value);
     a.uncertainty = a.uncertainty * a.value * a.value;
@@ -996,4 +996,4 @@ log (uncertain_value_t <std::complex <T>> a)
     a.value = log (a.value);
     return a;
 }
-} // namespace isto::uncertain_value
+} // namespace calculisto::uncertain_value
