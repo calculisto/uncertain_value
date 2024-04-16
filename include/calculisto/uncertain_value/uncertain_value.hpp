@@ -33,7 +33,7 @@ uncertain_value_t
     value = T {};
 
         value_type
-    uncertainty = static_cast <T> (0);
+    variance = static_cast <T> (0);
 
         template <class U>
         requires std::convertible_to <U, T>
@@ -41,7 +41,7 @@ uncertain_value_t
         explicit (false)
     uncertain_value_t (uncertain_value_t <U> const& a)
         : value { a.value }
-        , uncertainty { a.uncertainty }
+        , variance { a.variance }
     {}
 
         constexpr
@@ -53,11 +53,13 @@ uncertain_value_t
         : value { a }
     {}
 
+    // ATTENTION: the parameter u (the uncertainty) is considered a variance,
+    // the square of a standard deviation!
         constexpr
         explicit (false)
-    uncertain_value_t (T const& a, T const& b)
-        : value { a }
-        , uncertainty { b }
+    uncertain_value_t (T const& v, T const& u)
+        : value { v }
+        , variance { u }
     {}
 };
     template <class T>
@@ -70,7 +72,7 @@ swap (uncertain_value_t <T>& a, uncertain_value_t <T>& b) noexcept
 {
         using std::swap;
     swap (a.value, b.value);
-    swap (a.uncertainty, b.uncertainty);
+    swap (a.variance, b.variance);
 }
 
     template <class T, class U>
@@ -80,7 +82,7 @@ swap (uncertain_value_t <T>& a, uncertain_value_t <U>& b) noexcept
 {
         using std::swap;
     swap (a.value, b.value);
-    swap (a.uncertainty, b.uncertainty);
+    swap (a.variance, b.variance);
 }
 
     template <class T, class U>
@@ -88,7 +90,7 @@ swap (uncertain_value_t <T>& a, uncertain_value_t <U>& b) noexcept
     constexpr auto
 operator == (uncertain_value_t <T> const& a, uncertain_value_t <U> const& b)
 {
-    return a.value == b.value && a.uncertainty == b.uncertainty;
+    return a.value == b.value && a.variance == b.variance;
 }
 
     template <class T, class U>
@@ -137,7 +139,7 @@ operator <=> (T const& a, uncertain_value_t <U> const& b)
     constexpr uncertain_value_t <U>
 operator + (uncertain_value_t <T> const& a)
 {
-    return { +a.value, +a.uncertainty };
+    return { +a.value, +a.variance };
 }
     template <
           class T
@@ -146,7 +148,7 @@ operator + (uncertain_value_t <T> const& a)
     constexpr uncertain_value_t <U>
 operator - (uncertain_value_t <T> const& a)
 {
-    return { -a.value, -a.uncertainty };
+    return { -a.value, -a.variance };
 }
 // 3.2.2. Binary, internal.
     template <
@@ -157,7 +159,7 @@ operator - (uncertain_value_t <T> const& a)
     constexpr uncertain_value_t <V>
 operator + (uncertain_value_t <T> const& a, uncertain_value_t <U> const& b)
 {
-    return { a.value + b.value, a.uncertainty + b.uncertainty };
+    return { a.value + b.value, a.variance + b.variance };
 }
     template <
           class T
@@ -167,7 +169,7 @@ operator + (uncertain_value_t <T> const& a, uncertain_value_t <U> const& b)
     constexpr uncertain_value_t <V>
 operator - (uncertain_value_t <T> const& a, uncertain_value_t <U> const& b)
 {
-    return { a.value - b.value, a.uncertainty + b.uncertainty };
+    return { a.value - b.value, a.variance + b.variance };
 }
     template <
           class T
@@ -179,7 +181,7 @@ operator * (uncertain_value_t <T> const& a, uncertain_value_t <U> const& b)
 {
     return { 
           a.value * b.value 
-        , a.uncertainty * b.value * b.value + b.uncertainty * a.value * a.value 
+        , a.variance * b.value * b.value + b.variance * a.value * a.value 
     };
 }
     template <
@@ -194,7 +196,7 @@ operator / (uncertain_value_t <T> const& a, uncertain_value_t <U> const& b)
     if (a.value == static_cast <T> (0)) return { 0, 0 };
     return { 
           a.value / b.value 
-        , a.value * a.value / b.value / b.value * (a.uncertainty / a.value / a.value + b.uncertainty / b.value / b.value) 
+        , a.value * a.value / b.value / b.value * (a.variance / a.value / a.value + b.variance / b.value / b.value) 
     };
 }
 // Compound assignement
@@ -207,7 +209,7 @@ operator / (uncertain_value_t <T> const& a, uncertain_value_t <U> const& b)
 operator += (uncertain_value_t <T>& a, uncertain_value_t <U> const& b)
 {
     a.value += b.value;
-    a.uncertainty += b.uncertainty;
+    a.variance += b.variance;
     return a;
 }
     template <
@@ -219,7 +221,7 @@ operator += (uncertain_value_t <T>& a, uncertain_value_t <U> const& b)
 operator -= (uncertain_value_t <T>& a, uncertain_value_t <U> const& b)
 {
     a.value -= b.value;
-    a.uncertainty += b.uncertainty;
+    a.variance += b.variance;
     return a;
 }
     template <
@@ -230,8 +232,8 @@ operator -= (uncertain_value_t <T>& a, uncertain_value_t <U> const& b)
     constexpr uncertain_value_t <V>&
 operator *= (uncertain_value_t <T>& a, uncertain_value_t <U> const& b)
 {
-    a.uncertainty *= b.value * b.value;
-    a.uncertainty += b.uncertainty * a.value * a.value;
+    a.variance *= b.value * b.value;
+    a.variance += b.variance * a.value * a.value;
     a.value *= b.value;
     return a;
 }
@@ -243,8 +245,8 @@ operator *= (uncertain_value_t <T>& a, uncertain_value_t <U> const& b)
     constexpr uncertain_value_t <V>&
 operator /= (uncertain_value_t <T>& a, uncertain_value_t <U> const& b)
 {
-    a.uncertainty += b.uncertainty * a.value * a.value / b.value / b.value;
-    a.uncertainty /= b.value * b.value;
+    a.variance += b.variance * a.value * a.value / b.value / b.value;
+    a.variance /= b.value * b.value;
     a.value /= b.value;
     return a;
 }
@@ -257,7 +259,7 @@ operator /= (uncertain_value_t <T>& a, uncertain_value_t <U> const& b)
     constexpr uncertain_value_t <V>
 operator + (uncertain_value_t <T> const& a, U const& b)
 {
-    return { a.value + b, a.uncertainty };
+    return { a.value + b, a.variance };
 }
     template <
           class T
@@ -267,7 +269,7 @@ operator + (uncertain_value_t <T> const& a, U const& b)
     constexpr uncertain_value_t <V>
 operator + (T const& a, uncertain_value_t <U> const& b)
 {
-    return { a + b.value, b.uncertainty };
+    return { a + b.value, b.variance };
 }
     template <
           class T
@@ -277,7 +279,7 @@ operator + (T const& a, uncertain_value_t <U> const& b)
     constexpr uncertain_value_t <V>
 operator - (uncertain_value_t <T> const& a, U const& b)
 {
-    return { a.value - b, a.uncertainty };
+    return { a.value - b, a.variance };
 }
     template <
           class T
@@ -287,7 +289,7 @@ operator - (uncertain_value_t <T> const& a, U const& b)
     constexpr uncertain_value_t <V>
 operator - (T const& a, uncertain_value_t <U> const& b)
 {
-    return { a - b.value, b.uncertainty };
+    return { a - b.value, b.variance };
 }
     template <
           class T
@@ -297,7 +299,7 @@ operator - (T const& a, uncertain_value_t <U> const& b)
     constexpr uncertain_value_t <V>
 operator * (uncertain_value_t <T> const& a, U const& b)
 {
-    return { a.value * b, a.uncertainty * b * b };
+    return { a.value * b, a.variance * b * b };
 }
     template <
           class T
@@ -307,7 +309,7 @@ operator * (uncertain_value_t <T> const& a, U const& b)
     constexpr uncertain_value_t <V>
 operator * (T const& a, uncertain_value_t <U> const& b)
 {
-    return { a * b.value, b.uncertainty * a * a };
+    return { a * b.value, b.variance * a * a };
 }
     template <
           class T
@@ -317,7 +319,7 @@ operator * (T const& a, uncertain_value_t <U> const& b)
     constexpr uncertain_value_t <V>
 operator / (uncertain_value_t <T> const& a, U const& b)
 {
-    return { a.value / b, a.uncertainty / b / b };
+    return { a.value / b, a.variance / b / b };
 }
     template <
           class T
@@ -327,7 +329,7 @@ operator / (uncertain_value_t <T> const& a, U const& b)
     constexpr uncertain_value_t <V>
 operator / (T const& a, uncertain_value_t <U> const& b)
 {
-    return { a / b.value, b.uncertainty * a * a / pow (b.value, 4)};
+    return { a / b.value, b.variance * a * a / pow (b.value, 4)};
 }
 // Compound assignement
     template <
@@ -361,7 +363,7 @@ operator -= (uncertain_value_t <T>& a, U const& b)
 operator *= (uncertain_value_t <T>& a, U const& b)
 {
     a.value *= b;
-    a.uncertainty *= b * b;
+    a.variance *= b * b;
     return a;
 }
     template <
@@ -373,7 +375,7 @@ operator *= (uncertain_value_t <T>& a, U const& b)
 operator /= (uncertain_value_t <T>& a, U const& b)
 {
     a.value /= b;
-    a.uncertainty /= b * b;
+    a.variance /= b * b;
     return a;
 }
 
@@ -450,7 +452,7 @@ fabs (uncertain_value_t <T> const& a)
 exp (uncertain_value_t <T> a)
 {
     a.value = exp (a.value);
-    a.uncertainty = a.uncertainty * a.value * a.value;
+    a.variance = a.variance * a.value * a.value;
     return a;
 }
     template <
@@ -461,7 +463,7 @@ exp (uncertain_value_t <T> a)
 exp2 (uncertain_value_t <T> a)
 {
     a.value = exp2 (a.value);
-    a.uncertainty = a.uncertainty * a.value * a.value 
+    a.variance = a.variance * a.value * a.value 
          * std::numbers::ln2_v <T> * std::numbers::ln2_v <T>;
     return a;
 }
@@ -474,7 +476,7 @@ expm1 (uncertain_value_t <T> const a)
 {
         auto
     x = exp (a.value);
-    return { expm1 (a.value), a.uncertainty * x * x};
+    return { expm1 (a.value), a.variance * x * x};
 }
     template <
           class T
@@ -483,7 +485,7 @@ expm1 (uncertain_value_t <T> const a)
     constexpr uncertain_value_t <U>
 log (uncertain_value_t <T> a)
 {
-    a.uncertainty = a.uncertainty / a.value / a.value;
+    a.variance = a.variance / a.value / a.value;
     a.value = log (a.value);
     return a;
 }
@@ -494,7 +496,7 @@ log (uncertain_value_t <T> a)
     constexpr uncertain_value_t <U>
 log10 (uncertain_value_t <T> a)
 {
-    a.uncertainty = a.uncertainty / a.value / a.value
+    a.variance = a.variance / a.value / a.value
         / std::numbers::ln10_v <T> / std::numbers::ln10_v <T>;
     a.value = log10 (a.value);
     return a;
@@ -506,7 +508,7 @@ log10 (uncertain_value_t <T> a)
     constexpr uncertain_value_t <U>
 log2 (uncertain_value_t <T> a)
 {
-    a.uncertainty = a.uncertainty / a.value / a.value
+    a.variance = a.variance / a.value / a.value
         / std::numbers::ln2_v <T> / std::numbers::ln2_v <T>;
     a.value = log2 (a.value);
     return a;
@@ -518,7 +520,7 @@ log2 (uncertain_value_t <T> a)
     constexpr uncertain_value_t <U>
 log1p (uncertain_value_t <T> a)
 {
-    a.uncertainty = a.uncertainty / a.value / a.value;
+    a.variance = a.variance / a.value / a.value;
     a.value = log1p (a.value);
     return a;
 }
@@ -529,7 +531,7 @@ log1p (uncertain_value_t <T> a)
     constexpr uncertain_value_t <U>
 sqrt (uncertain_value_t <T> a)
 {
-    a.uncertainty = a.uncertainty / a.value / static_cast <T> (4);
+    a.variance = a.variance / a.value / static_cast <T> (4);
     a.value = sqrt (a.value);
     return a;
 }
@@ -540,7 +542,7 @@ sqrt (uncertain_value_t <T> a)
     constexpr uncertain_value_t <U>
 cbrt (uncertain_value_t <T> a)
 {
-    a.uncertainty = a.uncertainty 
+    a.variance = a.variance 
         / pow (a.value, static_cast <T> (4.0 / 3.0))
         / static_cast <T> (9)
     ;
@@ -554,7 +556,7 @@ cbrt (uncertain_value_t <T> a)
     constexpr uncertain_value_t <U>
 sin (uncertain_value_t <T> a)
 {
-    a.uncertainty = a.uncertainty * cos (a.value) * cos (a.value);
+    a.variance = a.variance * cos (a.value) * cos (a.value);
     a.value = sin (a.value);
     return a;
 }
@@ -565,7 +567,7 @@ sin (uncertain_value_t <T> a)
     constexpr uncertain_value_t <U>
 cos (uncertain_value_t <T> a)
 {
-    a.uncertainty = a.uncertainty * sin (a.value) * sin (a.value);
+    a.variance = a.variance * sin (a.value) * sin (a.value);
     a.value = cos (a.value);
     return a;
 }
@@ -576,7 +578,7 @@ cos (uncertain_value_t <T> a)
     constexpr uncertain_value_t <U>
 tan (uncertain_value_t <T> a)
 {
-    a.uncertainty = a.uncertainty / cos (a.value) / cos (a.value);
+    a.variance = a.variance / cos (a.value) / cos (a.value);
     a.value = tan (a.value);
     return a;
 }
@@ -651,8 +653,8 @@ f (T const& a, uncertain_value_t <U> const& b)                              \
 fmin (uncertain_value_t <T> a, uncertain_value_t <U> b)
 {
     if (a.value < b.value) 
-        return uncertain_value_t <V> { a.value, a.uncertainty };
-    return uncertain_value_t <V> { b.value, b.uncertainty };
+        return uncertain_value_t <V> { a.value, a.variance };
+    return uncertain_value_t <V> { b.value, b.variance };
 }
     template <
           class T 
@@ -663,7 +665,7 @@ fmin (uncertain_value_t <T> a, uncertain_value_t <U> b)
 fmin (uncertain_value_t <T> a, U const& b)
 {
     if (a.value < b) 
-        return uncertain_value_t <V> { a.value, a.uncertainty };
+        return uncertain_value_t <V> { a.value, a.variance };
     return uncertain_value_t <V> { b, 0 };
 }
     template <
@@ -676,7 +678,7 @@ fmin (T const& a, uncertain_value_t <U> b)
 {
     if (a < b.value) 
         return uncertain_value_t <V> { a, 0 };
-    return uncertain_value_t <V> { b.value, b.uncertainty };
+    return uncertain_value_t <V> { b.value, b.variance };
 }
 
     template <
@@ -690,19 +692,19 @@ pow (uncertain_value_t <T> a, uncertain_value_t <U> const& b)
     if (b.value == 0)
     {
         a.value = 1;
-        a.uncertainty = 0;
+        a.variance = 0;
         return a;
     }
     if (a.value == 0)
     {
         a.value = 0;
-        a.uncertainty = 0;
+        a.variance = 0;
         return a;
     }
-    a.uncertainty = a.uncertainty * b.value * b.value / a.value / a.value
-        + b.uncertainty * log (a.value) * log (a.value);
+    a.variance = a.variance * b.value * b.value / a.value / a.value
+        + b.variance * log (a.value) * log (a.value);
     a.value = pow (a.value, b.value); 
-    a.uncertainty = a.uncertainty * a.value * a.value;
+    a.variance = a.variance * a.value * a.value;
     return a;
 }
     template <
@@ -716,18 +718,18 @@ pow (uncertain_value_t <T> a, U const& b)
     if (b == 0)
     {
         a.value = 1;
-        a.uncertainty = 0;
+        a.variance = 0;
         return a;
     }
     if (a.value == 0)
     {
         a.value = 0;
-        a.uncertainty = 0;
+        a.variance = 0;
         return a;
     }
-    a.uncertainty = a.uncertainty / a.value / a.value * b * b;
+    a.variance = a.variance / a.value / a.value * b * b;
     a.value = pow (a.value, b);
-    a.uncertainty = a.uncertainty * a.value * a.value;
+    a.variance = a.variance * a.value * a.value;
     return a;
 }
     template <
@@ -741,18 +743,18 @@ pow (T const& a, uncertain_value_t <U> b)
     if (b.value == 0)
     {
         b.value = 1;
-        b.uncertainty = 0;
+        b.variance = 0;
         return b;
     }
     if (a == 0)
     {
         b.value = 0;
-        b.uncertainty = 0;
+        b.variance = 0;
         return b;
     }
-    b.uncertainty = b.uncertainty * log (a) * log (a);
+    b.variance = b.variance * log (a) * log (a);
     b.value = pow (a, b.value);
-    b.uncertainty = b.uncertainty * b.value * b.value;
+    b.variance = b.variance * b.value * b.value;
     return b;
 }
 
@@ -986,13 +988,13 @@ remquo (T const& a,  uncertain_value_t <U> const& b, int * c)
     constexpr auto
 real (uncertain_value_t <std::complex <T>> const& a)
 {
-    return uncertain_value_t <T> { real (a.value), real (a.uncertainty) };
+    return uncertain_value_t <T> { real (a.value), real (a.variance) };
 }
     template <class T>
     constexpr auto
 log (uncertain_value_t <std::complex <T>> a)
 {
-    a.uncertainty = a.uncertainty / a.value / a.value;
+    a.variance = a.variance / a.value / a.value;
     a.value = log (a.value);
     return a;
 }

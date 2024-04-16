@@ -31,152 +31,152 @@ TEST_CASE("uncertain_value.hpp")
             C = a * A + b * B;
             static_assert (std::is_same_v <decltype (C), U>);
             CHECK(C.value == a * A.value + b * B.value);
-            CHECK(C.uncertainty == a * a * A.uncertainty + b * b * B.uncertainty);
+            CHECK(C.variance == a * a * A.variance + b * b * B.variance);
         }
         {
                 auto const
             C = a * A - b * B;
             static_assert (std::is_same_v <decltype (C), U>);
             CHECK(C.value == a * A.value - b * B.value);
-            CHECK(C.uncertainty == a * a * A.uncertainty + b * b * B.uncertainty);
+            CHECK(C.variance == a * a * A.variance + b * b * B.variance);
         }
         {
                 auto const
             C = A + B;
             static_assert (std::is_same_v <decltype (C), U>);
             CHECK(C.value == A.value + B.value);
-            CHECK(C.uncertainty == A.uncertainty + B.uncertainty);
+            CHECK(C.variance == A.variance + B.variance);
                 auto
             D = A;
             D += B;
             CHECK(D.value == C.value);
-            CHECK(D.uncertainty == C.uncertainty);
+            CHECK(D.variance == C.variance);
         }
         {
                 auto const
             C = A - B;
             static_assert (std::is_same_v <decltype (C), U>);
             CHECK(C.value == A.value - B.value);
-            CHECK(C.uncertainty == A.uncertainty + B.uncertainty);
+            CHECK(C.variance == A.variance + B.variance);
                 auto
             D = A;
             D -= B;
             CHECK(D.value == C.value);
-            CHECK(D.uncertainty == C.uncertainty);
+            CHECK(D.variance == C.variance);
         }
         {
                 auto const
             C = A * B;
             static_assert (std::is_same_v <decltype (C), U>);
             CHECK(C.value == A.value * B.value);
-            CHECK(C.uncertainty == 
-                  A.uncertainty * B.value * B.value 
-                + B.uncertainty * A.value * A.value
+            CHECK(C.variance == 
+                  A.variance * B.value * B.value 
+                + B.variance * A.value * A.value
             );
                 auto
             D = A;
             D *= B;
             CHECK(D.value == C.value);
-            CHECK(D.uncertainty == C.uncertainty);
+            CHECK(D.variance == C.variance);
         }
         {
                 auto const
             C = A / B;
             static_assert (std::is_same_v <decltype (C), U>);
             CHECK(C.value == A.value / B.value);
-            CHECK(C.uncertainty == 
-                  A.uncertainty / B.value / B.value 
-                + B.uncertainty * A.value * A.value / B.value / B.value 
+            CHECK(C.variance == 
+                  A.variance / B.value / B.value 
+                + B.variance * A.value * A.value / B.value / B.value 
                     / B.value / B.value 
             );
                 auto
             D = A;
             D /= B;
             CHECK(D.value == C.value);
-            CHECK(D.uncertainty == C.uncertainty);
+            CHECK(D.variance == C.variance);
         }
         {
                 auto const
             C = A + a;
             static_assert (std::is_same_v <decltype (C), U>);
             CHECK(C.value == A.value + a);
-            CHECK(C.uncertainty == A.uncertainty);
+            CHECK(C.variance == A.variance);
                 auto
             D = A;
             D += a;
             CHECK(D.value == C.value);
-            CHECK(D.uncertainty == C.uncertainty);
+            CHECK(D.variance == C.variance);
         }
         {
                 auto const
             C = A - a;
             static_assert (std::is_same_v <decltype (C), U>);
             CHECK(C.value == A.value - a);
-            CHECK(C.uncertainty == A.uncertainty);
+            CHECK(C.variance == A.variance);
                 auto
             D = A;
             D -= a;
             CHECK(D.value == C.value);
-            CHECK(D.uncertainty == C.uncertainty);
+            CHECK(D.variance == C.variance);
         }
         {
                 auto const
             C = A * a;
             static_assert (std::is_same_v <decltype (C), U>);
             CHECK(C.value == A.value * a);
-            CHECK(C.uncertainty == A.uncertainty * a * a);
+            CHECK(C.variance == A.variance * a * a);
                 auto
             D = A;
             D *= a;
             CHECK(D.value == C.value);
-            CHECK(D.uncertainty == C.uncertainty);
+            CHECK(D.variance == C.variance);
         }{
                 auto const
             C = A / a;
             static_assert (std::is_same_v <decltype (C), U>);
             CHECK(C.value == A.value / a);
-            CHECK(C.uncertainty == A.uncertainty / a / a);
+            CHECK(C.variance == A.variance / a / a);
                 auto
             D = A;
             D /= a;
             CHECK(D.value == C.value);
-            CHECK(D.uncertainty == C.uncertainty);
+            CHECK(D.variance == C.variance);
         }
         {
                 auto const
             C = pow (A, B);
             static_assert (std::is_same_v <decltype (C), U>);
             CHECK(C.value == pow (A.value, B.value));
-            CHECK(C.uncertainty == doctest::Approx (C.value * C.value * (
-                  pow (B.value / A.value, 2) * A.uncertainty
-                + pow (log (A.value), 2) * B.uncertainty
+            CHECK(C.variance == doctest::Approx (C.value * C.value * (
+                  pow (B.value / A.value, 2) * A.variance
+                + pow (log (A.value), 2) * B.variance
             )));
                 auto
             D = pow (A, U {B.value, 0});
                 auto
             E = pow (A, B.value);
             CHECK (D.value == E.value);
-            CHECK (D.uncertainty == E.uncertainty);
+            CHECK (D.variance == E.variance);
                 auto
             F = pow (U {A.value, 0}, B);
                 auto
             G = pow (A.value, B);
             CHECK (F.value == G.value);
-            CHECK (F.uncertainty == G.uncertainty);
+            CHECK (F.variance == G.variance);
         }
         {
                 auto const
             C = log (A);
             static_assert (std::is_same_v <decltype (C), U>);
             CHECK(C.value == log (A.value));
-            CHECK(C.uncertainty == A.uncertainty / A.value / A.value);
+            CHECK(C.variance == A.variance / A.value / A.value);
         }
         {
                 auto const
             C = exp (A);
             static_assert (std::is_same_v <decltype (C), U>);
             CHECK(C.value == exp (A.value));
-            CHECK(C.uncertainty == A.uncertainty * exp (A.value) * exp (A.value));
+            CHECK(C.variance == A.variance * exp (A.value) * exp (A.value));
         }
 
     }; 
